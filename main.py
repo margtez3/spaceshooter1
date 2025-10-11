@@ -240,15 +240,17 @@ def init_game():
     other_players = {}
     processed_meteors = set()
 
+    # Creamos las estrellas del fondo
+    star_surf = pygame.image.load(join('images', 'star.png')).convert_alpha()
+    for i in range(20):
+        Star(star_sprites, star_surf, W_WIDTH, W_HEIGHT)
+
     # Creamos el jugador local
     player = Player(all_sprites, W_WIDTH, W_HEIGHT, laser_surf, all_sprites, laser_sprites, laser_sound, player_id)
     last_laser_count = 0
     last_lives = 3
 
-    # Creamos las estrellas del fondo
-    star_surf = pygame.image.load(join('images', 'star.png')).convert_alpha()
-    for i in range(20):
-        Star(star_sprites, star_surf, W_WIDTH, W_HEIGHT)
+
 
     # Notificar al servidor que el juego comenzó
     network.send({'type': 'start_game'})
@@ -350,7 +352,7 @@ def draw_start_screen():
     """Dibuja la pantalla de inicio"""
     screen.fill('#3a2e3f')
 
-    title_text = title_font.render("SPACE SHOOTER", True, (255, 255, 255))
+    title_text = title_font.render("SPACE-SHOOTER", True, (255, 255, 255))
     title_rect = title_text.get_rect(center=(W_WIDTH // 2, W_HEIGHT // 2 - 150))
     screen.blit(title_text, title_rect)
 
@@ -388,17 +390,17 @@ def draw_instructions_screen():
 
     instructions = [
         "CONTROLES:",
-        "• Flechas: Mover la nave",
+        "• Flechas: ← ↑↓ → ",
         "• Espacio: Disparar",
         "",
         "OBJETIVO:",
-        "• Destruye meteoros para ganar puntos",
+        "• Destruye la mayor cantidad de meteoritos posibles",
         "• Evita ser golpeado por meteoros",
         "• Cada jugador tiene 3 vidas",
         "• Pierdes una vida al chocar con un meteoro",
         "• El jugador con más puntos gana",
         "",
-        "¡Buena suerte!"
+        "¡ Buena suerte ;) !"
     ]
 
     y_offset = 220
@@ -559,7 +561,7 @@ while running:
         draw_connecting_screen()
 
     elif GAME_STATE == "ERROR":
-        draw_error_screen()
+            draw_error_screen()
 
     elif GAME_STATE == "WAITING":
         if player is None:
