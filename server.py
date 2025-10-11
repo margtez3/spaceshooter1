@@ -426,4 +426,4 @@ if __name__ == "__main__":
     server_thread.start()
 
     # Ejecutar interfaz gráfica
-    run_serve
+    run_server_gui()
