@@ -7,12 +7,15 @@ class Player(pygame.sprite.Sprite):
     def __init__(self, groups, screen_width, screen_height, laser_surf, all_sprites, laser_sprites, laser_sound,
                  player_number=1):
         super().__init__(groups)
-        # Imagen del jugador según el número (1 o 2)
-        if player_number == 1:
-            self.og = pygame.image.load(join('images', 'player.png')).convert_alpha()
-        else:
-            self.og = pygame.image.load(join('images', 'player2.png')).convert_alpha()
+        player_images = {
+            1: 'player.png',
+            2: 'player2.png',
+            3: 'player3.png',
+            4: 'player4.png'
+        }
 
+        image_file = player_images.get(player_number, 'player.png')
+        self.og = pygame.image.load(join('images', image_file)).convert_alpha()
         self.image = self.og
         self.rect = self.image.get_rect(center=(screen_width / 2, screen_height / 2))
         self.direction = pygame.math.Vector2()
@@ -33,12 +36,33 @@ class Player(pygame.sprite.Sprite):
         self.laser_shoot_time = 0
         self.cooldown_duration = 400  # 400ms entre disparos
 
+        self.lives = 3
+        self.invulnerable = False
+        self.hit_time = 0
+        self.invulnerable_duration = 2000  # 2 segundos de invulnerabilidad después de ser golpeado
+
     def laser_timer(self):
         """Temporizador para controlar el cooldown entre disparos"""
         if not self.can_shoot:
             current_time = pygame.time.get_ticks()
             if current_time - self.laser_shoot_time >= self.cooldown_duration:
                 self.can_shoot = True
+
+    def invulnerability_timer(self):
+        """Temporizador para la invulnerabilidad después de ser golpeado"""
+        if self.invulnerable:
+            current_time = pygame.time.get_ticks()
+            if current_time - self.hit_time >= self.invulnerable_duration:
+                self.invulnerable = False
+
+    def take_damage(self):
+        """Reduce una vida del jugador"""
+        if not self.invulnerable and self.lives > 0:
+            self.lives -= 1
+            self.invulnerable = True
+            self.hit_time = pygame.time.get_ticks()
+            return True
+        return False
 
     def update(self, dt, events):
         """Actualiza la posición del jugador y maneja los disparos"""
@@ -68,3 +92,13 @@ class Player(pygame.sprite.Sprite):
                 self.laser_sound.play()
 
         self.laser_timer()
+        self.invulnerability_timer()
+
+        if self.invulnerable:
+            # Parpadeo cada 100ms
+            if (pygame.time.get_ticks() // 100) % 2 == 0:
+                self.image.set_alpha(128)
+            else:
+                self.image.set_alpha(255)
+        else:
+            self.image.set_alpha(255)

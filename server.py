@@ -1,7 +1,6 @@
 """
-Servidor multijugador para Space Shooter
+Servidor multijugador para Space Shooter - Hasta 4 jugadores
 Ejecuta este archivo primero antes de iniciar los clientes
-Si usas ngrok, ejecuta: ngrok tcp 5555
 """
 
 import socket
@@ -13,15 +12,14 @@ from random import randint
 # Configuración del servidor
 HOST = '0.0.0.0'  # Escucha en todas las interfaces
 PORT = 5555
-MAX_PLAYERS = 2
+MAX_PLAYERS = 4
 
 # Estado del juego compartido
 game_state = {
-    'players': {},  # {player_id: {'x': x, 'y': y, 'alive': True}}
+    'players': {},  # {player_id: {'x': x, 'y': y, 'lives': 3, 'score': 0, 'name': name}}
     'meteors': [],  # [{'x': x, 'y': y, 'id': id, 'rotation': rot}]
     'lasers': [],  # [{'x': x, 'y': y, 'id': id, 'player_id': pid}]
-    'scores': {1: 0, 2: 0},
-    'game_started': False,
+    'game_started': False,  # Cambiado a False para esperar señal START
     'meteor_counter': 0,
     'laser_counter': 0
 }
@@ -47,13 +45,40 @@ def handle_client(conn, addr, player_id):
         print(f"[ERROR] No se pudo enviar ID al jugador {player_id}")
         return
 
+    # Esperar a recibir el nombre del jugador
+    player_name = f"Jugador {player_id}"
+    try:
+        data = conn.recv(4096)
+        if data:
+            message = pickle.loads(data)
+            if message['type'] == 'set_name':
+                player_name = message['name']
+                conn.send(pickle.dumps({'type': 'name_confirmed', 'name': player_name}))
+    except:
+        pass
+
     # Inicializar jugador en el estado del juego
     with game_lock:
+        # Posiciones iniciales diferentes para cada jugador
+        start_positions = [
+            (320, 400),  # Jugador 1 - izquierda
+            (640, 400),  # Jugador 2 - centro-izquierda
+            (960, 400),  # Jugador 3 - centro-derecha
+            (1120, 400)  # Jugador 4 - derecha
+        ]
+        pos = start_positions[player_id - 1] if player_id <= 4 else (640, 400)
+
         game_state['players'][player_id] = {
-            'x': 640 if player_id == 1 else 640,
-            'y': 400 if player_id == 1 else 400,
-            'alive': True
+            'x': pos[0],
+            'y': pos[1],
+            'lives': 3,
+            'score': 0,
+            'name': player_name
         }
+
+        if len(game_state['players']) >= 2 and not game_state['game_started']:
+            game_state['game_started'] = True
+            print(f"[JUEGO INICIADO] {len(game_state['players'])} jugadores conectados")
 
     connected = True
     while connected:
@@ -82,10 +107,10 @@ def handle_client(conn, addr, player_id):
                         'player_id': player_id
                     })
 
-            elif message['type'] == 'player_died':
+            elif message['type'] == 'update_lives':
                 with game_lock:
                     if player_id in game_state['players']:
-                        game_state['players'][player_id]['alive'] = False
+                        game_state['players'][player_id]['lives'] = message['lives']
 
             elif message['type'] == 'start_game':
                 with game_lock:
@@ -155,25 +180,11 @@ def update_game_state():
                 if current_time - meteor['spawn_time'] > 5 or meteor['y'] > 900:
                     meteors_to_remove.append(meteor)
 
-                for player_id, player_data in game_state['players'].items():
-                    if player_data.get('alive', True):
-                        # Calcular distancia entre meteoro y jugador
-                        dx = meteor['x'] - player_data['x']
-                        dy = meteor['y'] - player_data['y']
-                        distance = (dx * dx + dy * dy) ** 0.5
-
-                        # Radio de colisión ~50 píxeles
-                        if distance < 50:
-                            # Marcar jugador como muerto
-                            game_state['players'][player_id]['alive'] = False
-                            # Marcar meteoro para eliminar
-                            if meteor not in meteors_to_remove:
-                                meteors_to_remove.append(meteor)
-
             for meteor in meteors_to_remove:
                 if meteor in game_state['meteors']:
                     game_state['meteors'].remove(meteor)
 
+            # Actualizar láseres y detectar colisiones
             lasers_to_remove = []
             meteors_to_remove = []
 
@@ -196,8 +207,8 @@ def update_game_state():
                     if distance < 40:
                         # Incrementar puntaje del jugador que disparó
                         player_id = laser['player_id']
-                        if player_id in game_state['scores']:
-                            game_state['scores'][player_id] += 1
+                        if player_id in game_state['players']:
+                            game_state['players'][player_id]['score'] += 10
 
                         # Marcar láser y meteoro para eliminar
                         if laser not in lasers_to_remove:
@@ -227,7 +238,7 @@ def start_server():
 
     print(f"[SERVIDOR INICIADO] Escuchando en {HOST}:{PORT}")
     print(f"[INFO] Esperando hasta {MAX_PLAYERS} jugadores...")
-    print(f"[INFO] Si usas ngrok, ejecuta: ngrok tcp {PORT}")
+    print(f"[INFO] El juego iniciará automáticamente con 2 o más jugadores")
 
     # Iniciar hilos para actualizar el juego
     meteor_thread = threading.Thread(target=spawn_meteors, daemon=True)
@@ -263,6 +274,7 @@ def start_server():
 
 if __name__ == "__main__":
     print("=" * 50)
-    print("SERVIDOR SPACE SHOOTER MULTIJUGADOR")
+    print("SERVIDOR SPACE SHOOTER - 4 JUGADORES")
     print("=" * 50)
     start_server()
+
