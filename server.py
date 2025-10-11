@@ -350,7 +350,7 @@ def run_server_gui():
             players_list_panel = pygame.Rect(80, 310, 640, 110)
             draw_panel(screen, players_list_panel, (40, 45, 70), 200)
 
-            list_title = small_font.render("Connected Players:", True, (180, 200, 255))
+            list_title = small_font.render("Jugadores conectados:", True, (180, 200, 255))
             screen.blit(list_title, (100, 320))
 
             y_offset = 355
@@ -374,7 +374,7 @@ def run_server_gui():
                 player_text = info_font.render(f"{icon} {username}", True, name_color)
                 screen.blit(player_text, (x_offset, y_offset))
 
-                stats_text = info_font.render(f"({score} pts, ❤{lives})", True, (200, 200, 200))
+                stats_text = info_font.render(f"({score} pts, {lives})", True, (200, 200, 200))
                 screen.blit(stats_text, (x_offset + 150, y_offset))
 
                 col += 1
@@ -386,17 +386,17 @@ def run_server_gui():
 
         # Botón de inicio o mensaje de estado
         if game_state["num_players"] >= MIN_PLAYERS and not game_started:
-            draw_button(screen, start_button_rect, "START GAME", font, button_hovered, True)
-        elif game_state["status"] == "running":
+            draw_button(screen, start_button_rect, "Iniciando", font, button_hovered, True)
+        elif game_state["status"] == "Corriendo":
             status_panel = pygame.Rect(250, 480, 300, 80)
             draw_panel(screen, status_panel, (50, 150, 100), 220)
-            status_msg = small_font.render("Game Running...", True, (150, 255, 150))
+            status_msg = small_font.render("Juegando...", True, (150, 255, 150))
             status_rect = status_msg.get_rect(center=status_panel.center)
             screen.blit(status_msg, status_rect)
-        elif game_state["status"] == "finished":
+        elif game_state["status"] == "Terminado":
             status_panel = pygame.Rect(250, 480, 300, 80)
             draw_panel(screen, status_panel, (150, 50, 50), 220)
-            status_msg = small_font.render("Game Finished", True, (255, 150, 150))
+            status_msg = small_font.render("Juego terminado", True, (255, 150, 150))
             status_rect = status_msg.get_rect(center=status_panel.center)
             screen.blit(status_msg, status_rect)
         else:
@@ -404,7 +404,7 @@ def run_server_gui():
             draw_panel(screen, status_panel, (80, 80, 100), 220)
 
             if num_players == 0:
-                msg = "Waiting for players..."
+                msg = "Esperando jugadores..."
             else:
                 msg = f"Need {MIN_PLAYERS - num_players} more player(s)"
 

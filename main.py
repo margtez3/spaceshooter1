@@ -157,9 +157,9 @@ def show_login_screen(screen, font):
     ip_input = InputBox(325, 360, 350, 55, font, "Server IP:", "127.0.0.1")
     port_input = InputBox(325, 460, 350, 55, font, "Port:", "5555")
 
-    start_button = Button(280, 580, 230, 80, "Start", font,
+    start_button = Button(280, 580, 220, 75, "Start", font,
                           color=(60, 180, 120), hover_color=(80, 220, 150))
-    instructions_button = Button(520, 580, 230, 80, "Ayuda", font,
+    instructions_button = Button(520, 580, 220, 75, "Ayuda", font,
                                  color=(220, 100, 60), hover_color=(255, 140, 80))
 
     show_instructions = False
@@ -207,18 +207,17 @@ def show_login_screen(screen, font):
             draw_panel(screen, panel_rect, (25, 30, 50), 240)
 
             # Título
-            title = title_font.render("INSTRUCCIONES", True, (255, 200, 100))
+            title = title_font.render("¿Como jugar?", True, (255, 200, 100))
             title_rect = title.get_rect(center=(screen.get_width() // 2, 140))
             screen.blit(title, title_rect)
 
             # Instrucciones con iconos
             instructions = [
-                ("", "MUEVES TU NAVE CON LAS FLECHAS"),
-                ("", "DISPARAS CON SPACE"),
-                ("", "QUE NO TE GOLPEEN LOS METEOROS"),
-                ("", "TIENES 3 VIDAS"),
-                ("", "DESTRUYE LOS METEOROS")
-
+                ("", "Mueve tu nave con las flechas"),
+                ("", "Dispara lasers con el espacio"),
+                ("", "Esquiva meteoritos"),
+                ("", "Tienes 3 vidas"),
+                ("", "Destruye meteoritos")
             ]
 
             icon_font = pygame.font.Font(join('images', 'Oxanium-Bold.ttf'), 32)
@@ -244,7 +243,7 @@ def show_login_screen(screen, font):
             screen.blit(title, title_rect)
 
             # Subtítulo
-            subtitle = subtitle_font.render("Multiplayer", True, (180, 180, 200))
+            subtitle = subtitle_font.render("Multiplayer Edition", True, (180, 180, 200))
             subtitle_rect = subtitle.get_rect(center=(screen.get_width() // 2, 195))
             screen.blit(subtitle, subtitle_rect)
 
@@ -310,7 +309,7 @@ def show_game_over_screen(screen, font, game_state, network):
         screen.blit(title, title_rect)
 
         # Header de tabla
-        header = header_font.render("FINAL SCORE", True, (255, 220, 100))
+        header = header_font.render("FINAL SCORES", True, (255, 220, 100))
         header_rect = header.get_rect(center=(screen.get_width() // 2, 200))
         screen.blit(header, header_rect)
 
@@ -332,19 +331,19 @@ def show_game_over_screen(screen, font, game_state, network):
             if i == 0:
                 bg_color = (255, 215, 0, 40)
                 text_color = (255, 230, 100)
-                medal = "Oro"
+
             elif i == 1:
                 bg_color = (192, 192, 192, 40)
                 text_color = (220, 220, 220)
-                medal = "Plata"
+
             elif i == 2:
                 bg_color = (205, 127, 50, 40)
                 text_color = (230, 180, 130)
-                medal = "Bronze"
+
             else:
                 bg_color = (100, 100, 120, 30)
                 text_color = (200, 200, 200)
-                medal = " Loser "
+
 
             # Fondo de fila
             row_rect = pygame.Rect(200, y_offset - 5, 600, 50)
@@ -353,15 +352,15 @@ def show_game_over_screen(screen, font, game_state, network):
             screen.blit(row_surf, row_rect)
 
             # Contenido
-            pos_text = score_font.render(f"{medal} {position}", True, text_color)
+            pos_text = score_font.render(f" {position}", True, text_color)
             name_text = score_font.render(username, True, text_color)
             score_text = score_font.render(f"{score} pts", True, text_color)
-            lives_text = score_font.render(f"❤ {lives}", True, text_color)
+
 
             screen.blit(pos_text, (220, y_offset))
             screen.blit(name_text, (360, y_offset))
             screen.blit(score_text, (570, y_offset))
-            screen.blit(lives_text, (710, y_offset))
+
 
             y_offset += 70
 
@@ -410,7 +409,7 @@ def main():
     laser_sound.set_volume(0.5)
     explosion_sound = pygame.mixer.Sound(join('audio', 'explosion.wav'))
     explosion_sound.set_volume(0.4)
-    damage_sound = pygame.mixer.Sound(join('audio', 'damage.wav'))
+    damage_sound = pygame.mixer.Sound(join('audio', 'demage.wav'))
     damage_sound.set_volume(0.6)
     game_sound = pygame.mixer.Sound(join('audio', 'game_music.wav'))
     game_sound.set_volume(0.4)
@@ -461,7 +460,7 @@ def main():
         status = game_state.get("status", "waiting")
 
         if status == "ready":
-            waiting_text = wait_font.render("Waiting for server...", True, (255, 220, 100))
+            waiting_text = wait_font.render("Esperando al servidor...", True, (255, 220, 100))
         else:
             waiting_text = wait_font.render(f"Players: {num_players}/4", True, (100, 200, 255))
 
@@ -470,7 +469,7 @@ def main():
 
         # Texto parpadeante
         if pygame.time.get_ticks() % 1000 < 500:
-            status_text = small_font.render("Connecting...", True, (150, 150, 180))
+            status_text = small_font.render("Conectando...", True, (150, 150, 180))
             status_rect = status_text.get_rect(center=(W_WIDTH // 2, 430))
             screen.blit(status_text, status_rect)
 
@@ -513,7 +512,7 @@ def main():
                     draw_gradient_background(screen, (15, 20, 35), (30, 40, 60))
                     panel_rect = pygame.Rect(250, 350, 500, 100)
                     draw_panel(screen, panel_rect, (30, 35, 55), 240)
-                    wait_text = font.render("Waiting for players...", True, (100, 200, 255))
+                    wait_text = font.render("Esperando jugadores...", True, (100, 200, 255))
                     wait_rect = wait_text.get_rect(center=(W_WIDTH // 2, 400))
                     screen.blit(wait_text, wait_rect)
                     pygame.display.update()
@@ -584,7 +583,7 @@ def main():
                     username = pdata.get("username", f"P{player_id}")
                     score = pdata.get("score", 0)
                     lives = pdata.get("lives", 0)
-                    text = hud_font.render(f"{username}: {score} pts (❤{lives})", True, (220, 220, 220))
+                    text = hud_font.render(f"{username}: {score} pts ({lives})", True, (220, 220, 220))
                     screen.blit(text, (W_WIDTH - 315, y_offset))
                     y_offset += 35
 
