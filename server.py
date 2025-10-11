@@ -1,13 +1,6 @@
 """
 Servidor multijugador para Space Shooter - Hasta 4 jugadores
 Ejecuta este archivo primero antes de iniciar los clientes
-
-CONFIGURACIÓN CON NGROK:
-1. Ejecuta: ngrok tcp 5555
-2. Copia la URL que te da (ejemplo: tcp://8.tcp.us-cal-1.ngrok.io:10276)
-3. Los clientes deben usar:
-   - IP: 8.tcp.us-cal-1.ngrok.io
-   - Puerto: 10276
 """
 
 import socket
@@ -17,8 +10,8 @@ import time
 from random import randint
 
 # Configuración del servidor
-HOST = '0.0.0.0'  # Escucha en todas las interfaces (necesario para ngrok)
-PORT = 5555  # Puerto local que ngrok redirigirá
+HOST = '0.0.0.0'  # Escucha en todas las interfaces
+PORT = 5555
 MAX_PLAYERS = 4
 
 # Estado del juego compartido
@@ -243,18 +236,9 @@ def start_server():
     server.bind((HOST, PORT))
     server.listen(MAX_PLAYERS)
 
-    print("=" * 60)
-    print("SERVIDOR SPACE SHOOTER - 4 JUGADORES")
-    print("=" * 60)
     print(f"[SERVIDOR INICIADO] Escuchando en {HOST}:{PORT}")
     print(f"[INFO] Esperando hasta {MAX_PLAYERS} jugadores...")
     print(f"[INFO] El juego iniciará automáticamente con 2 o más jugadores")
-    print()
-    print("PARA USAR CON NGROK:")
-    print("1. Ejecuta en otra terminal: ngrok tcp 5555")
-    print("2. Copia la URL de ngrok (ej: 8.tcp.us-cal-1.ngrok.io:10276)")
-    print("3. Los clientes deben conectarse usando esa URL")
-    print("=" * 60)
 
     # Iniciar hilos para actualizar el juego
     meteor_thread = threading.Thread(target=spawn_meteors, daemon=True)
@@ -289,4 +273,7 @@ def start_server():
 
 
 if __name__ == "__main__":
+    print("=" * 50)
+    print("SERVIDOR SPACE SHOOTER - 4 JUGADORES")
+    print("=" * 50)
     start_server()
