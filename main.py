@@ -110,7 +110,7 @@ class InputBox:
 pygame.init()
 
 # Tamaños de la pantalla
-W_WIDTH, W_HEIGHT = 1280, 800
+W_WIDTH, W_HEIGHT = 1000, 900
 screen = pygame.display.set_mode((W_WIDTH, W_HEIGHT))
 pygame.display.set_caption("Space Shooter - Multijugador (4 Jugadores)")
 clock = pygame.time.Clock()
@@ -141,7 +141,7 @@ laser_sound = pygame.mixer.Sound(join('audio', 'laser.wav'))
 laser_sound.set_volume(0.5)
 explosion_sound = pygame.mixer.Sound(join('audio', 'explosion.wav'))
 explosion_sound.set_volume(0.4)
-damage_sound = pygame.mixer.Sound(join('audio', 'damage.ogg'))
+damage_sound = pygame.mixer.Sound(join('audio', 'damage.wav'))
 damage_sound.set_volume(0.6)
 game_sound = pygame.mixer.Sound(join('audio', 'game_music.wav'))
 game_sound.set_volume(0.4)
@@ -250,8 +250,6 @@ def init_game():
     last_laser_count = 0
     last_lives = 3
 
-
-
     # Notificar al servidor que el juego comenzó
     network.send({'type': 'start_game'})
 
@@ -263,7 +261,7 @@ def init_game():
 
 def update_from_server():
     """Actualiza el estado local basado en los datos del servidor"""
-    global other_players, game_data
+    global other_players, game_data, processed_meteors
 
     if game_data is None:
         return
@@ -288,6 +286,15 @@ def update_from_server():
             if pid not in current_player_ids:
                 other_players[pid].kill()
                 del other_players[pid]
+
+        current_meteor_ids = {meteor_data['id'] for meteor_data in game_data['meteors']}
+
+        # Verificar qué meteoros desaparecieron (fueron destruidos)
+        for meteor in list(meteor_sprites):
+            if hasattr(meteor, 'meteor_id') and meteor.meteor_id not in current_meteor_ids:
+                # Crear explosión en la posición del meteoro destruido
+                Explosion(explosion_frames, [explosion_sprites], meteor.rect.center)
+                explosion_sound.play()
 
         # Actualizar meteoros
         meteor_sprites.empty()
@@ -318,6 +325,9 @@ def check_collisions():
 
             if distance < 50:  # Radio de colisión
                 if player.take_damage():
+                    Explosion(explosion_frames, [explosion_sprites], meteor.rect.center)
+                    explosion_sound.play()
+
                     if hasattr(meteor, 'meteor_id'):
                         processed_meteors.add(meteor.meteor_id)
                     # Actualizar vidas en el servidor
@@ -561,7 +571,7 @@ while running:
         draw_connecting_screen()
 
     elif GAME_STATE == "ERROR":
-            draw_error_screen()
+        draw_error_screen()
 
     elif GAME_STATE == "WAITING":
         if player is None:
