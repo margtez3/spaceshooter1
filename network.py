@@ -17,6 +17,7 @@ class Network:
         self.addr = ("", 0)
         self.player_id = None
         self.connected = False
+        self.last_error = ""
 
     def connect(self, server_ip, server_port):
         """Conecta al servidor y recibe el ID del jugador"""
@@ -28,7 +29,7 @@ class Network:
             self.port = int(server_port)
             self.addr = (self.server, self.port)
 
-            self.client.settimeout(5)
+            self.client.settimeout(10)  # Timeout más largo para conexiones remotas
             self.client.connect(self.addr)
             self.client.settimeout(None)  # Remove timeout after connection
 
@@ -41,15 +42,20 @@ class Network:
                 self.connected = True
                 return True, self.player_id
             elif message['type'] == 'error':
+                self.last_error = message['message']
                 return False, message['message']
         except socket.gaierror as e:
-            return False, f"No se pudo resolver la dirección: {server_ip}. Usa 127.0.0.1 para servidor local."
+            self.last_error = f"No se pudo resolver la dirección: {server_ip}"
+            return False, self.last_error
         except socket.timeout:
-            return False, "Tiempo de conexión agotado. Verifica que el servidor esté ejecutándose."
+            self.last_error = "Tiempo de conexión agotado. Verifica la URL de ngrok."
+            return False, self.last_error
         except ConnectionRefusedError:
-            return False, "Conexión rechazada. Asegúrate de que el servidor esté ejecutándose."
+            self.last_error = "Conexión rechazada. Verifica que el servidor esté ejecutándose."
+            return False, self.last_error
         except Exception as e:
-            return False, f"Error de conexión: {str(e)}"
+            self.last_error = f"Error de conexión: {str(e)}"
+            return False, self.last_error
 
         return False, "Error desconocido"
 

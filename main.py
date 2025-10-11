@@ -1,6 +1,11 @@
 """
 Cliente multijugador para Space Shooter - Hasta 4 jugadores
 Ejecuta server.py primero, luego ejecuta este archivo
+
+PARA CONECTARSE A TRAVÉS DE NGROK:
+1. Obtén la URL de ngrok del servidor (ej: 8.tcp.us-cal-1.ngrok.io)
+2. Obtén el puerto de ngrok (ej: 10276)
+3. Ingresa estos valores en la pantalla de conexión
 """
 
 import pygame
@@ -140,7 +145,7 @@ explosion_frames = [pygame.image.load(join('images', 'explosion', f'{i}.png')).c
 laser_sound = pygame.mixer.Sound(join('audio', 'laser.wav'))
 laser_sound.set_volume(0.5)
 explosion_sound = pygame.mixer.Sound(join('audio', 'explosion.wav'))
-explosion_sound.set_volume(0.4)
+explosion_sound.set_volume(0.1)
 damage_sound = pygame.mixer.Sound(join('audio', 'demage.wav'))
 damage_sound.set_volume(0.6)
 game_sound = pygame.mixer.Sound(join('audio', 'game_music.wav'))
@@ -148,8 +153,8 @@ game_sound.set_volume(0.4)
 game_sound.play(loops=-1)
 
 username_input = InputBox(W_WIDTH // 2 - 200, 250, 400, 50, input_font, "Nombre:", "Jugador1")
-ip_input = InputBox(W_WIDTH // 2 - 200, 350, 400, 50, input_font, "IP del Servidor:", "127.0.0.1")
-port_input = InputBox(W_WIDTH // 2 - 200, 450, 400, 50, input_font, "Puerto:", "5555")
+ip_input = InputBox(W_WIDTH // 2 - 200, 350, 400, 50, input_font, "IP del Servidor:", "8.tcp.us-cal-1.ngrok.io")
+port_input = InputBox(W_WIDTH // 2 - 200, 450, 400, 50, input_font, "Puerto:", "10276")
 connect_button = Button(W_WIDTH // 2 - 100, 550, 200, 60, "CONECTAR", font)
 
 # Botones
@@ -387,6 +392,10 @@ def draw_login_screen():
     port_input.draw(screen)
     connect_button.draw(screen)
 
+    info_text = tiny_font.render("Usa la URL y puerto de ngrok para jugar online", True, (150, 150, 150))
+    info_rect = info_text.get_rect(center=(W_WIDTH // 2, 650))
+    screen.blit(info_text, info_rect)
+
     back_button.draw(screen)
 
 
@@ -437,6 +446,24 @@ def draw_connecting_screen():
     connecting_text = title_font.render("CONECTANDO...", True, (255, 255, 255))
     connecting_rect = connecting_text.get_rect(center=(W_WIDTH // 2, W_HEIGHT // 2))
     screen.blit(connecting_text, connecting_rect)
+
+
+def draw_error_screen():
+    """Dibuja la pantalla de error de conexión"""
+    screen.fill('#3a2e3f')
+
+    error_text = title_font.render("ERROR", True, (255, 50, 50))
+    error_rect = error_text.get_rect(center=(W_WIDTH // 2, W_HEIGHT // 2 - 100))
+    screen.blit(error_text, error_rect)
+
+    if hasattr(network, 'last_error'):
+        error_msg = small_font.render(network.last_error, True, (255, 255, 255))
+        error_msg_rect = error_msg.get_rect(center=(W_WIDTH // 2, W_HEIGHT // 2))
+        screen.blit(error_msg, error_msg_rect)
+
+    retry_text = tiny_font.render("Presiona ESC para volver", True, (200, 200, 200))
+    retry_rect = retry_text.get_rect(center=(W_WIDTH // 2, W_HEIGHT // 2 + 100))
+    screen.blit(retry_text, retry_rect)
 
 
 def draw_waiting_screen():
@@ -553,8 +580,8 @@ while running:
 
         if connect_button.is_clicked(mouse_pos, mouse_pressed):
             username = username_input.text if username_input.text else "Jugador"
-            server_ip = ip_input.text if ip_input.text else "127.0.0.1"
-            server_port = port_input.text if port_input.text else "5555"
+            server_ip = ip_input.text if ip_input.text else "8.tcp.us-cal-1.ngrok.io"
+            server_port = port_input.text if port_input.text else "10276"
             GAME_STATE = "CONNECTING"
 
             connect_thread = threading.Thread(
@@ -642,4 +669,5 @@ while running:
 # Cerrar conexión
 network.disconnect()
 pygame.quit()
+
 
